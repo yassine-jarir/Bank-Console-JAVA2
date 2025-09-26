@@ -1,35 +1,25 @@
-package com.bank.config;
-
+package com.bank.config;//package com.bank.config;
+import io.github.cdimascio.dotenv.Dotenv;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.ResultSet;
 
 public class DatabaseConfig {
 
-    public static void main() {
-        String url = "jdbc:postgresql://localhost:5432/bankSystem";
-        String username = "postgres";
-        String password = "123";
+    public static Connection DbConnection() {
+        Dotenv dotenv = Dotenv.load();
+
+        String url = dotenv.get("DB_URL");
+        String username = dotenv.get("DB_USER");
+        String password = dotenv.get("DB_PASSWORD");
 
         try {
             Connection connection = DriverManager.getConnection(url, username, password);
-            System.out.println("Connected to PostgreSQL!");
-
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT version();");
-
-            while (resultSet.next()) {
-                System.out.println("PostgreSQL Version: " + resultSet.getString(1));
-            }
-
-            resultSet.close();
-            statement.close();
-            connection.close();
-
+            System.out.println("Connected successfully to PostgreSQL!");
+            return connection;
         } catch (SQLException e) {
-            System.out.println("Connection failed: " + e.getMessage());
+            System.err.println("Connection failed: " + e.getMessage());
+            return null;
         }
     }
 }

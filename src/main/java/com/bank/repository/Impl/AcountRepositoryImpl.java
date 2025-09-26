@@ -1,4 +1,13 @@
 package com.bank.repository.Impl;
 
-public class AcountRepositoryImpl {
+import com.bank.models.Account;
+import com.bank.repository.interfaces.AccountRepository;
+
+public class AcountRepositoryImpl implements AccountRepository {
+
+
+    public Account getAccountByRIB(String RIB , String password) {
+        return null;
+    }
+
 }
