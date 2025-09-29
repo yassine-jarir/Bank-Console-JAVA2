@@ -1,3 +1,5 @@
+// now i want to create the database for this brief i already create the models inside java
+
 package com.bank.models;
 
 import java.math.BigDecimal;

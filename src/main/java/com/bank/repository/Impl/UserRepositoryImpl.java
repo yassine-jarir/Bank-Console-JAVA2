@@ -6,15 +6,22 @@ import com.bank.repository.interfaces.UserRepositoryInterface;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.List;
 
 public class UserRepositoryImpl implements UserRepositoryInterface {
+    private Connection conn;
+
+    public  UserRepositoryImpl () {
+         this.conn = DatabaseConfig.getInstance().getConnection();
+
+    }
 
      public User CreateUser(User user) {
         String query = "INSERT INTO users (name, email, phoneNumber, address, password, role) VALUES (?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DatabaseConfig.DbConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-
+        try(PreparedStatement stmt = conn.prepareStatement(query);
+        )
+             {
             stmt.setString(1, user.getName());
             stmt.setString(2, user.getEmail());
             stmt.setString(3, user.getPhoneNumber());
@@ -29,17 +36,15 @@ public class UserRepositoryImpl implements UserRepositoryInterface {
            return null;
         }
     }
-
     public List<User> getAllUsers() {
         String query = "SELECT * FROM users";
         java.util.List<User> users = new java.util.ArrayList<>();
-        try (Connection conn = DatabaseConfig.DbConnection();
-             PreparedStatement stmt = conn.prepareStatement(query);
-             java.sql.ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
+        try( PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery();)
+            {
+                while (rs.next()) {
                 User user = new User();
-                user.setCustomerId(rs.getString("id"));
+                user.setCustomerId(rs.getInt("user_id"));
                 user.setName(rs.getString("name"));
                 user.setEmail(rs.getString("email"));
                 user.setPhoneNumber(rs.getString("phoneNumber"));
@@ -52,5 +57,19 @@ public class UserRepositoryImpl implements UserRepositoryInterface {
             e.printStackTrace();
         }
         return users;
+    }
+
+    public void DeleteUser(int index) {
+         String query = "DELETE FROM users WHERE user_id  = ? ";
+         try (
+                 PreparedStatement stmt = conn.prepareStatement(query);
+
+                 ) {
+             stmt.setInt(1, index);
+             stmt.executeUpdate();
+            } catch (Exception e) {
+                e.printStackTrace();
+         }
+
     }
 }

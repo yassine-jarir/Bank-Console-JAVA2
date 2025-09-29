@@ -5,21 +5,31 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseConfig {
+    private static DatabaseConfig instance;
+    private Connection connection;
 
-    public static Connection DbConnection() {
-        Dotenv dotenv = Dotenv.load();
-
-        String url = dotenv.get("DB_URL");
-        String username = dotenv.get("DB_USER");
-        String password = dotenv.get("DB_PASSWORD");
-
+    private DatabaseConfig() {
         try {
-            Connection connection = DriverManager.getConnection(url, username, password);
+            Dotenv dotenv = Dotenv.load();
+
+            String url = dotenv.get("DB_URL");
+            String username = dotenv.get("DB_USER");
+            String password = dotenv.get("DB_PASSWORD");
+             this.connection = DriverManager.getConnection(url, username, password);
             System.out.println("Connected successfully to PostgreSQL!");
-            return connection;
         } catch (SQLException e) {
             System.err.println("Connection failed: " + e.getMessage());
-            return null;
         }
     }
+
+    public static DatabaseConfig getInstance() {
+        if (instance == null) {
+            instance = new DatabaseConfig();
+        }
+        return instance;
+    }
+    public  Connection  getConnection() {
+        return connection;
+    }
 }
+

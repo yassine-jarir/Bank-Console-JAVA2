@@ -13,7 +13,9 @@ import com.bank.service.AccountService;
 import com.bank.service.AuthService;
 import com.bank.service.UserService;
 
+import java.util.List;
 import java.util.Scanner;
+import java.util.stream.IntStream;
 
 public class Main {
     public static void main(String[] args) {
@@ -30,7 +32,7 @@ public class Main {
         // user repository
         UserRepositoryImpl userRepository = new UserRepositoryImpl();
         UserService userService = new UserService(userRepository);
-         UserController userController = new UserController(userService);
+        UserController userController = new UserController(userService);
         User loggedInUser = null;
 
         while (true) {
@@ -46,8 +48,8 @@ public class Main {
                     int choice = scanner.nextInt();
                     scanner.nextLine();
 
-                    switch(choice){
-                        case 1 :
+                    switch (choice) {
+                        case 1:
                             System.out.println("enter RIB");
                             String RIB = scanner.nextLine();
                             System.out.println("enter password");
@@ -56,28 +58,28 @@ public class Main {
                             accountService.connexion(RIB, password);
 
                             break;
-                        case 2 :
+                        case 2:
                             // create new client
                             break;
-                        case 3 :
+                        case 3:
                             // deposit
                             break;
-                        case 4 :
+                        case 4:
                             // withdraw;
                             break;
-                        case 5 :
+                        case 5:
                             // virements internes
                             break;
-                        case 6 :
+                        case 6:
                             // demandes de crédits
                             break;
-                        default :
+                        default:
                             System.out.println("Invalid choice, try again.");
                     }
-                }
-                else if (loggedInUser.getRole() == Role.ADMIN){
+                } else if (loggedInUser.getRole() == Role.ADMIN) {
                     System.out.println("=== Admin Menu ===");
                     System.out.println("1. manage users");
+                    System.out.println("2. ");
                     System.out.println("2. Logout");
                     System.out.println("3. get all users");
                     int choice = scanner.nextInt();
@@ -86,73 +88,102 @@ public class Main {
                     switch (choice) {
                         case 1:
                             // View profile
-                            System.out.println("add new user :");
+                            int ManageChoice;
                             System.out.println("#############################");
+                            System.out.println("1- add user");
+                            System.out.println("1- delete user");
+                            ManageChoice = scanner.nextInt();
+                            scanner.nextLine();
+                            switch (ManageChoice) {
+                                case 1:
+                                    System.out.println("add new user :");
+                                    System.out.println("#############################");
 
-                            System.out.println("enter the name: " );
-                            String name = scanner.nextLine();
-                            System.out.println("enter the email: " );
+                                    System.out.println("enter the name: ");
+                                    String name = scanner.nextLine();
+                                    System.out.println("enter the email: ");
+                                    String email = scanner.nextLine();
+                                    System.out.println("enter the address: ");
+                                    String address = scanner.nextLine();
+                                    System.out.println("enter the password: ");
+                                    String password = scanner.nextLine();
+                                    System.out.println("enter the role (ADMIN, TELLER, CUSTOMER, AUDITOR): ");
+                                    String roleInput = scanner.nextLine();
+                                    System.out.println("enter the phone number : ");
+                                    String phoneNumber = scanner.nextLine();
+
+                                    userController.CreateUser(name, email, phoneNumber, address, password, roleInput);
+                                    System.out.println("Role: " + loggedInUser.getRole());
+                                    break;
+                                case 2:
+                                    System.out.println("delete user");
+                                    List<User> users = userController.GetAllUsers();
+
+                                    System.out.println("All users:");
+
+                                    IntStream.range(0, users.size())
+                                            .forEach(i -> {
+                                                User user = users.get(i);
+                                                System.out.println((i + 1) + " : Name: " + user.getName() + " - Role: " + user.getRole());
+                                            });
+                                    System.out.println("enter the index of the user to delete : ");
+                                    int index = scanner.nextInt();
+
+                                    User userIndex = users.get(index - 1);
+                                    userController.DeleteUser(userIndex.getCustomerId());
+                                    break;
+                                default:
+                                    System.out.println("Invalid choice, try again.");
+                                };
+                             case 3:
+
+                                    System.out.println("Logged out successfully.");
+                                    userController.GetAllUsers();
+
+                                    break;
+                            case 4:
+                                // Logout
+                                loggedIn = false;
+                                loggedInUser = null;
+                                System.out.println("Logged out successfully.");
+                                break;
+                            default:
+                                System.out.println("Invalid choice, try again.");
+                            }
+                    }
+                } else {
+                    System.out.println("###########################################################");
+
+                    System.out.println("\n1. Connexion");
+                    System.out.println("2. Exit");
+
+                    int choice = scanner.nextInt();
+                    scanner.nextLine();
+
+                    switch (choice) {
+                        case 1:
+                            System.out.println("Enter email: ");
                             String email = scanner.nextLine();
-                            System.out.println("enter the address: " );
-                            String address = scanner.nextLine();
-                            System.out.println("enter the password: " );
+                            System.out.println("Enter password: ");
                             String password = scanner.nextLine();
-                            System.out.println("enter the role (ADMIN, TELLER, CUSTOMER, AUDITOR): " );
-                            String roleInput = scanner.nextLine();
-                            System.out.println("enter the phone number : ");
-                            String phoneNumber = scanner.nextLine();
+                            User user = authController.login(email, password);
+                            if (user != null) {
+                                loggedIn = true;
+                                loggedInUser = user;
+                            } else {
+                                System.out.println("Invalid email or password.");
+                            }
 
-                            userController.CreateUser(name , email, phoneNumber, address, password, roleInput);
-
-                            System.out.println("Role: " + loggedInUser.getRole());
                             break;
                         case 2:
-                            // Logout
-                            loggedIn = false;
+                            // LoginString
                             loggedInUser = null;
-                            System.out.println("Logged out successfully.");
-                            break;
-                        case 3:
-//                            System.out.println("Logged out successfully.");
-                                userController.GetAllUsers();
                             break;
                         default:
                             System.out.println("Invalid choice, try again.");
                     }
                 }
-            } else {
-                System.out.println("###########################################################");
-
-                System.out.println("\n1. Connexion");
-                System.out.println("2. Exit");
-
-                int choice = scanner.nextInt();
-                scanner.nextLine();
-
-                switch (choice) {
-                    case 1:
-                        System.out.println("Enter email: ");
-                        String email = scanner.nextLine();
-                        System.out.println("Enter password: ");
-                        String password = scanner.nextLine();
-                        User user =  authController.login(email, password);
-                      if (user != null){
-                            loggedIn = true;
-                            loggedInUser = user;
-                        } else {
-                            System.out.println("Invalid email or password.");
-                      }
-
-                        break;
-                    case 2:
-                        // LoginString
-                        loggedInUser = null;
-                        break;
-                    default:
-                        System.out.println("Invalid choice, try again.");
-                }
             }
         }
     }
-}
 

@@ -33,4 +33,8 @@ public class UserService {
     public List<User> getAllUsers() {
         return userRepository.getAllUsers();
     }
+    public void DeleteUser(int index) {
+
+        userRepository.DeleteUser(index);
+    }
 }

@@ -4,7 +4,7 @@ import com.bank.enums.Role;
 import java.math.BigDecimal;
 
 public class User {
-    private String customerId;
+    private int customerId;
     private String name;
     private String email;
     private String phoneNumber;
@@ -16,8 +16,8 @@ public class User {
 
 
     // Getters & setters (password now has a setter)
-    public String getCustomerId() { return customerId; }
-    public void setCustomerId(String customerId) { this.customerId = customerId; }
+    public Integer getCustomerId() { return customerId; }
+    public void setCustomerId(Integer customerId) { this.customerId = customerId; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
