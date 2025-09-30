@@ -14,7 +14,6 @@ public class UserRepositoryImpl implements UserRepositoryInterface {
 
     public  UserRepositoryImpl () {
          this.conn = DatabaseConfig.getInstance().getConnection();
-
     }
 
      public User CreateUser(User user) {

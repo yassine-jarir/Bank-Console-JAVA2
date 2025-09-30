@@ -14,19 +14,6 @@ public class Client {
     private LocalDate registrationDate;
     private boolean isActive;
 
-    public Client() {}
-
-    public Client(Long id, String firstName, String lastName, String email, String phone, String address, LocalDate dateOfBirth, LocalDate registrationDate, boolean isActive) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.phone = phone;
-        this.address = address;
-        this.dateOfBirth = dateOfBirth;
-        this.registrationDate = registrationDate;
-        this.isActive = isActive;
-    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -55,31 +42,4 @@ public class Client {
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { isActive = active; }
 
-    @Override
-    public String toString() {
-        return "Client{" +
-                "id=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", email='" + email + '\'' +
-                ", phone='" + phone + '\'' +
-                ", address='" + address + '\'' +
-                ", dateOfBirth=" + dateOfBirth +
-                ", registrationDate=" + registrationDate +
-                ", isActive=" + isActive +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Client client = (Client) o;
-        return isActive == client.isActive && Objects.equals(id, client.id) && Objects.equals(email, client.email);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, email, isActive);
-    }
 }

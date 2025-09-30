@@ -4,5 +4,6 @@ public enum Role {
     TELLER,
     MANAGER,
     ADMIN,
-    AUDITOR
+    AUDITOR,
+    CUSTOMER
 }
