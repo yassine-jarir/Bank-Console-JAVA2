@@ -3,6 +3,7 @@ package com.bank.controller;
 import com.bank.models.Client;
 import com.bank.service.ClientService;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -51,5 +52,6 @@ ClientService clientService;
         }
         return client;
     }
+
 
 }

@@ -87,4 +87,29 @@ public class AccountRepositoryImpl implements AccountRepository {
             System.out.println(e.getMessage());
         }
     }
+
+public void internalTransfer(Client client, String sourceRib, String destRib, BigDecimal amount){
+    Account sourceAccount = getAccountByRIB(sourceRib);
+    Account destAccount = getAccountByRIB(destRib);
+    if (sourceAccount == null) {
+        throw new RuntimeException("Source account not found for RIB: " + sourceRib);
+    }
+    if (destAccount == null) {
+        throw new RuntimeException("Destination account not found for RIB: " + destRib);
+    }
+    if (sourceAccount.getBalance().compareTo(amount) < 0) {
+        throw new RuntimeException("Insufficient funds in source account. Current balance: " + sourceAccount.getBalance());
+    }
+    sourceAccount.setBalance(sourceAccount.getBalance().subtract(amount));
+    destAccount.setBalance(destAccount.getBalance().add(amount));
+    try {
+        updateAccountBalance(sourceAccount.getAccountRib(), sourceAccount.getBalance());
+        updateAccountBalance(destAccount.getAccountRib(), destAccount.getBalance());
+        insertTransaction(sourceAccount.getAccountRib(), amount, "TRANSFER internal" , sourceAccount.getId());
+        insertTransaction(destAccount.getAccountRib(), amount, "TRANSFER internal" , destAccount.getId());
+        System.out.println("Transferred " + amount + " from Account : " + sourceAccount.getAccountType() + " to Account: " + destAccount.getAccountType() + " successfully.");
+    } catch (Exception e) {
+        throw new RuntimeException("Failed to transfer amount: " + e.getMessage());
+    }
+}
 }

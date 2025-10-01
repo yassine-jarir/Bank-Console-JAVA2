@@ -102,4 +102,7 @@ public class AccountService {
             throw new RuntimeException("Failed to withdraw amount: " + e.getMessage());
         }
     }
+    public void internalTransfer(Client client, String sourceRib, String destRib, BigDecimal amount){
+        accountRepositoryImpl.internalTransfer(client, sourceRib, destRib, amount);
+    }
 }

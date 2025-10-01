@@ -5,6 +5,7 @@ import com.bank.repository.Impl.AccountRepositoryImpl;
 import com.bank.repository.Impl.ClientRepositoryImpl;
 import com.bank.repository.interfaces.AccountRepository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -44,4 +45,5 @@ public class ClientService {
         Optional<Client> client = clientRepository.getClientByEmail(email);
         return client;
     }
+
 }

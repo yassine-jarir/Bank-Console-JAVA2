@@ -12,4 +12,5 @@ public interface AccountRepository {
      Account createAccount(Account account, Client client);
          void updateAccountBalance(String rib, BigDecimal newBalance);
         void insertTransaction(String rib, BigDecimal amount, String type , Long accountId);
+        void internalTransfer(Client client, String sourceRib, String destRib, BigDecimal amount);
 }

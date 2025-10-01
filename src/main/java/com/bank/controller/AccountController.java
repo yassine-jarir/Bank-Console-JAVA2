@@ -14,14 +14,14 @@ public class AccountController {
         this.accountService = accountService;
     }
 
-
     public void deposit(String rib, BigDecimal amount) {
-
         accountService.deposit(rib, amount);
-
     }
 
     public void withdraw(String rib, BigDecimal amount) {
         accountService.withdraw(rib, amount);
+    }
+    public void internalTransfer(Client client, String sourceRib, String destRib, BigDecimal amount){
+        accountService.internalTransfer(client, sourceRib, destRib, amount);
     }
 }

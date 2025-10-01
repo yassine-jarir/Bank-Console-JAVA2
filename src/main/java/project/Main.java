@@ -183,8 +183,9 @@ public class Main {
             System.out.println("1. Deposit");
             System.out.println("2. Withdraw");
             System.out.println("3. Internal transfer");
-            System.out.println("4. Request credit");
-            System.out.println("5. Back");
+            System.out.println("4. External transfer ");
+            System.out.println("5. Request credit");
+            System.out.println("6. Back");
 
             int choice = scanner.nextInt();
             scanner.nextLine();
@@ -210,9 +211,22 @@ public class Main {
                 BigDecimal amount = scanner.nextBigDecimal();
                 accountController.withdraw(ribToWithdraw, amount);
                 }
-                case 3 -> System.out.println("Internal transfer (to implement)");
-                case 4 -> System.out.println("Credit request (to implement)");
-                case 5 -> {
+                case 3 -> { // Internal transfer
+                    List<Account> accounts = client.getAccounts();
+                    accounts.forEach(a -> System.out.println("RIB : " + a.getAccountRib() + " | Balance : " + a.getBalance()));
+
+                    System.out.println("Enter source RIB: ");
+                    String sourceRib = scanner.nextLine();
+                    System.out.println("Enter destination RIB (same client): ");
+                    String destRib = scanner.nextLine();
+                    System.out.println("Enter amount: ");
+                    BigDecimal amount = scanner.nextBigDecimal();
+
+                    accountController.internalTransfer(client, sourceRib, destRib, amount);
+                }
+                case 4 -> System.out.println("External transfer (to implement)");
+                case 5 -> System.out.println("Credit request (to implement)");
+                case 6 -> {
                     System.out.println("Returning to Manage Clients...");
                     return;
                 }
