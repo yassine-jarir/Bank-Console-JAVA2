@@ -1,11 +1,13 @@
 package project;
 
+import com.bank.controller.AccountController;
 import com.bank.controller.AuthController;
 import com.bank.controller.ClientController;
 import com.bank.controller.UserController;
+import com.bank.models.Account;
 import com.bank.models.Client;
 import com.bank.models.User;
-import com.bank.repository.Impl.AcountRepositoryImpl;
+import com.bank.repository.Impl.AccountRepositoryImpl;
 import com.bank.repository.Impl.AuthRepositoryImpl;
 import com.bank.repository.Impl.ClientRepositoryImpl;
 import com.bank.repository.Impl.UserRepositoryImpl;
@@ -17,6 +19,7 @@ import com.bank.service.ClientService;
 import com.bank.service.UserService;
 
 import javax.swing.text.html.Option;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -34,16 +37,17 @@ public class Main {
         AuthController authController = new AuthController();
         AuthRepository authRepository = new AuthRepositoryImpl();
         AuthService authService = new AuthService(authRepository);
-// Account Service setup
-        AccountRepository accountRepository = new AcountRepositoryImpl();
-        AccountService accountService = new AccountService(accountRepository);
-// User Controller setup
+        // Account Service setup
+        AccountRepositoryImpl accountRepositoryImpl = new AccountRepositoryImpl();
+        AccountService accountService = new AccountService(accountRepositoryImpl);
+        AccountController accountController = new AccountController(accountService);
+        // User Controller setup
         UserRepositoryImpl userRepository = new UserRepositoryImpl();
         UserService userService = new UserService(userRepository);
         UserController userController = new UserController(userService);
-// Client Controller setup
+        // Client Controller setup
         ClientRepositoryImpl clientRepository = new ClientRepositoryImpl();
-        ClientService clientService = new ClientService(clientRepository);
+        ClientService clientService = new ClientService(clientRepository , accountRepositoryImpl);
         ClientController clientController = new ClientController(clientService);
 
         while (true) {
@@ -78,7 +82,7 @@ public class Main {
                 }
             } else {
                 switch (loggedInUser.getRole()) {
-                    case TELLER -> showTellerMenu(scanner, authService, loggedIn, loggedInUser, clientController);
+                    case TELLER -> showTellerMenu(scanner, authService, loggedIn, loggedInUser, clientController, accountController);
                     case ADMIN -> showAdminMenu(scanner, accountService, userController);
                     case CUSTOMER -> showCustomerMenu(scanner, accountService);
                     case AUDITOR -> showAuditorMenu(scanner, accountService);
@@ -91,7 +95,7 @@ public class Main {
 
 // ==================== TELLER MENU ====================
     private static void showTellerMenu(Scanner scanner, AuthService authService,
-                                       boolean loggedIn, User loggedInUser, ClientController clientController) {
+    boolean loggedIn, User loggedInUser, ClientController clientController, AccountController accountController) {
         while (true) {
             System.out.println("\n=== TELLER Menu ===");
             System.out.println("1. Create new client");
@@ -117,9 +121,18 @@ public class Main {
                     System.out.print("Date of birth (yyyy-MM-dd): ");
                     LocalDate dateOfBirth = LocalDate.parse(scanner.nextLine());
 
-                    clientController.CreateClient(firstName, lastName, email, phone, address, dateOfBirth);
+                    Boolean createSavingAccount = false;
+                    System.out.println("create saving account ? ");
+                    String response = scanner.nextLine();
+                    if (response.equalsIgnoreCase("yes") ) {
+                        createSavingAccount = true;
+                    }
+
+               Client client = clientController.CreateClient(firstName, lastName, email, phone, address, dateOfBirth , createSavingAccount);
+                System.out.println("client id " + client.getId());
+
                 }
-                case 2 -> manageClients(scanner, clientController);
+                case 2 -> manageClients(scanner, clientController, accountController);
                 case 3 -> {
                     System.out.println("Logging out...");
                     return;
@@ -130,7 +143,7 @@ public class Main {
     }
 
     // ==================== MANAGE CLIENTS ====================
-    private static void manageClients(Scanner scanner, ClientController clientController) {
+    private static void manageClients(Scanner scanner, ClientController clientController, AccountController accountController) {
         while (true) {
             System.out.println("\n--- Manage Clients ---");
             System.out.println("1. List all clients");
@@ -151,7 +164,7 @@ public class Main {
                  if (client.isPresent()){
                      Client c = client.get();
                      System.out.println("Selected client #" + c.getFirstName());
-                     showClientOperations(scanner, c);
+                     showClientOperations(scanner, c, accountController);
                  }
                 }
                 case 3 -> {
@@ -164,9 +177,9 @@ public class Main {
     }
 
     // ==================== CLIENT OPERATIONS ====================
-    private static void showClientOperations(Scanner scanner, Client client) {
+    private static void showClientOperations(Scanner scanner, Client client, AccountController accountController) {
         while (true) {
-            System.out.println("\n--- Client Operations for Client #" + client.getFirstName() + " ---");
+            System.out.println("\n--- Client Operations for Client #" + client.getFirstName() + " ---" );
             System.out.println("1. Deposit");
             System.out.println("2. Withdraw");
             System.out.println("3. Internal transfer");
@@ -177,8 +190,26 @@ public class Main {
             scanner.nextLine();
 
             switch (choice) {
-                case 1 -> System.out.println("Deposit (to implement)");
-                case 2 -> System.out.println("Withdraw (to implement)");
+                case 1 ->  {
+                System.out.println("select the account to deposit to : ");
+                List<Account> accounts = client.getAccounts();
+                accounts.stream().forEach(a -> System.out.println("RIB : " + a.getAccountRib() + " | Balance : " + a.getBalance() + " | Type : " + a.getAccountType() + " | Name : " + client.getFirstName()));
+                System.out.println("Enter deposit rib: ");
+                String ribToDeposit = scanner.nextLine();
+                System.out.println("Enter deposit amount: ");
+                BigDecimal amount = scanner.nextBigDecimal();
+                accountController.deposit(ribToDeposit ,amount );
+                }
+                case 2 -> {
+                System.out.println("select the account to withdraw from : ");
+                List<Account> accounts = client.getAccounts();
+                accounts.stream().forEach(a -> System.out.println("RIB : " + a.getAccountRib() + " | Balance : " + a.getBalance() + " | Type : " + a.getAccountType() + " | Name : " + client.getFirstName()));
+                System.out.println("Enter withdraw rib: ");
+                String ribToWithdraw = scanner.nextLine();
+                System.out.println("Enter withdraw amount: ");
+                BigDecimal amount = scanner.nextBigDecimal();
+                accountController.withdraw(ribToWithdraw, amount);
+                }
                 case 3 -> System.out.println("Internal transfer (to implement)");
                 case 4 -> System.out.println("Credit request (to implement)");
                 case 5 -> {
@@ -213,8 +244,6 @@ public class Main {
             case 6 -> System.out.println("Fees & commissions (to implement)");
             case 7 -> {
                 System.out.println("Logging out...");
-
-
             }
             default -> System.out.println("Invalid choice.");
         }
@@ -322,6 +351,3 @@ public class Main {
 
 
 }
-
-
-

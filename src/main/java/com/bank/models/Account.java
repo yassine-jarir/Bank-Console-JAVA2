@@ -1,21 +1,26 @@
-// now i want to create the database for this brief i already create the models inside java
-
 package com.bank.models;
+
+import com.bank.enums.AccountType;
 
 import java.math.BigDecimal;
 
 public class Account {
+    private Long id;
     private String RIB;
-    private int customerId;
+    private Long customerId;
     private BigDecimal balance;
-    private String accountType;
+    private AccountType accountType;
     private String Devise;
     private String status;
     private String createdAt;
 
-    // Constructor
-    public Account(String accountId, int customerId, BigDecimal balance, String accountType, String currency, String status, String createdAt) {
-        this.RIB = accountId;
+    // Default constructor
+    public Account() {
+    }
+
+    // Constructor with parameters
+    public Account(String RIB, Long customerId, BigDecimal balance, AccountType accountType, String currency, String status, String createdAt) {
+        this.RIB = RIB;
         this.customerId = customerId;
         this.balance = balance;
         this.accountType = accountType;
@@ -25,19 +30,24 @@ public class Account {
     }
 
     // Getters and setters
-    public String getAccountId() {
+    public String getAccountRib() {
         return RIB;
     }
-
-    public void setAccountId(String accountId) {
+    public Long getId() {
+        return id;
+    }
+    public void setId(Long id) {
+        this.id = id;
+    }
+    public void setAccountRib(String accountId) {
         this.RIB = accountId;
     }
 
-    public int getCustomerId() {
+    public Long getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(int customerId) {
+    public void setCustomerId(Long customerId) {
         this.customerId = customerId;
     }
 
@@ -49,12 +59,13 @@ public class Account {
         this.balance = balance;
     }
 
-    public String getAccountType() {
+    public AccountType getAccountType() {
         return accountType;
     }
 
-    public void setAccountType(String accountType) {
+    public AccountType setAccountType(AccountType accountType) {
         this.accountType = accountType;
+        return accountType;
     }
 
     public String getCurrency() {

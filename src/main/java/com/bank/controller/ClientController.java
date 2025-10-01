@@ -12,24 +12,29 @@ ClientService clientService;
     public ClientController(ClientService clientService){
         this.clientService = clientService;
     }
-    public void CreateClient(String firstName, String lastName, String email, String phone, String address, LocalDate dateOfBirth){
-       Client newClient =   clientService.createClient(firstName, lastName, email, phone, address, dateOfBirth);
+    public Client CreateClient(String firstName, String lastName, String email, String phone, String address, LocalDate dateOfBirth , Boolean createSavingAccount){
+       Client newClient = clientService.createClient(firstName, lastName, email, phone, address, dateOfBirth, createSavingAccount);
          if (newClient != null){
-             System.out.println("Client created successfully: " + newClient.getFirstName() + " " + newClient.getLastName());
+             System.out.println("Client created successfully: " + newClient.getFirstName() + " " + newClient.getLastName() + "ID : " + newClient.getId());
+             return newClient;
     }else{
                 System.out.println("Error: Could not create client.");
+                return null;
          }
          }
-
          public void getAllClients(){
              List<Client> clients = clientService.getAllClients();
-             if(clients.isEmpty()){
+             if(clients == null || clients.isEmpty()){
                     System.out.println("No clients found.");
              }else{
                  System.out.println("Clients List:");
-                    clients.stream().forEach(s -> System.out.println("name : " + s.getFirstName() + " " + s.getLastName() + ", email: " + s.getEmail()));
+                 clients.stream().forEach(s -> {
+                     System.out.println("name : " + s.getFirstName() + " " + s.getLastName() + ", email: " + s.getEmail());
+                     s.getAccounts().forEach(a -> System.out.println("  Account name: " + a.getAccountType() + ", Balance: " + a.getBalance()));
+                 });
              }
-         }
+    }
+
 
 
     public Optional<Client> getClientByEmail(String email) {
