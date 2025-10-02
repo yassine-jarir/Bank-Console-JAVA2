@@ -63,7 +63,16 @@ public class AccountService {
         }
        return account;
     }
+    public static void createNewAccount(Client client , boolean savingAccount){
+        Account account = new Account();
+        account.setAccountType(AccountType.CURRENT);
+        account.setBalance(new BigDecimal("0.00"));
+        account.setCurrency("MAD");
+        account.setStatus("ACTIVE");
+        account.setCustomerId(client.getId());
+        account.setAccountRib(RibGenerator.createRib());
 
+    }
     public void deposit(String rib, BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Deposit amount must be positive.");
@@ -104,5 +113,16 @@ public class AccountService {
     }
     public void internalTransfer(Client client, String sourceRib, String destRib, BigDecimal amount){
         accountRepositoryImpl.internalTransfer(client, sourceRib, destRib, amount);
+    }
+    public void externalTransfer(Client client, String sourceRib, String destRib, BigDecimal amount){
+        accountRepositoryImpl.externalTransfer(client, sourceRib, destRib, amount);
+    }
+    public void createNewAccount(Client client){
+        String RIB = RibGenerator.createRib();
+        try {
+            accountRepositoryImpl.createAccountForClient(client ,RIB );
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create new account: " + e.getMessage());
+        }
     }
 }

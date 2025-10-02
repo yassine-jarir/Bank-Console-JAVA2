@@ -6,11 +6,9 @@ import com.bank.controller.ClientController;
 import com.bank.controller.UserController;
 import com.bank.models.Account;
 import com.bank.models.Client;
+import com.bank.models.Transaction;
 import com.bank.models.User;
-import com.bank.repository.Impl.AccountRepositoryImpl;
-import com.bank.repository.Impl.AuthRepositoryImpl;
-import com.bank.repository.Impl.ClientRepositoryImpl;
-import com.bank.repository.Impl.UserRepositoryImpl;
+import com.bank.repository.Impl.*;
 import com.bank.repository.interfaces.AccountRepository;
 import com.bank.repository.interfaces.AuthRepository;
 import com.bank.service.AccountService;
@@ -49,6 +47,7 @@ public class Main {
         ClientRepositoryImpl clientRepository = new ClientRepositoryImpl();
         ClientService clientService = new ClientService(clientRepository , accountRepositoryImpl);
         ClientController clientController = new ClientController(clientService);
+        // Transaction
 
         while (true) {
             if (!loggedIn) {
@@ -180,12 +179,13 @@ public class Main {
     private static void showClientOperations(Scanner scanner, Client client, AccountController accountController) {
         while (true) {
             System.out.println("\n--- Client Operations for Client #" + client.getFirstName() + " ---" );
-            System.out.println("1. Deposit");
-            System.out.println("2. Withdraw");
-            System.out.println("3. Internal transfer");
-            System.out.println("4. External transfer ");
+            System.out.println("1. Deposit DONE");
+            System.out.println("2. Withdraw DONE");
+            System.out.println("3. Internal transfer DONE");
+            System.out.println("4. External transfer DONE");
             System.out.println("5. Request credit");
-            System.out.println("6. Back");
+            System.out.println("6. create new account DONE");
+            System.out.println("7. Back");
 
             int choice = scanner.nextInt();
             scanner.nextLine();
@@ -224,9 +224,28 @@ public class Main {
 
                     accountController.internalTransfer(client, sourceRib, destRib, amount);
                 }
-                case 4 -> System.out.println("External transfer (to implement)");
+                case 4 -> {
+                    List <Account> accounts = client.getAccounts();
+                    accounts.forEach(a -> System.out.println("RIB : " + a.getAccountRib() + " | Balance : " + a.getBalance()));
+                    System.out.println("Enter source RIB: ");
+                    String sourceRib = scanner.nextLine();
+                    System.out.println("Enter destination RIB (external): ");
+                    String destRib = scanner.nextLine();
+                    System.out.println("Enter amount: ");
+                    BigDecimal amount = scanner.nextBigDecimal();
+                    accountController.externalTransfer(client, sourceRib, destRib, amount);
+                }
                 case 5 -> System.out.println("Credit request (to implement)");
                 case 6 -> {
+                    System.out.println("create savings account ? (yes/no) ");
+                    String response = scanner.nextLine();
+                    if (response.equalsIgnoreCase("yes") ) {
+                        accountController.createNewAccount(client);
+                    }
+
+                    return;
+                }
+                case 7 -> {
                     System.out.println("Returning to Manage Clients...");
                     return;
                 }
@@ -347,21 +366,103 @@ public class Main {
             default -> System.out.println("Invalid choice.");
         }
     }
+
     // ==================== MANAGER MENU ====================
     private static void showManagerMenu(Scanner scanner, AccountService accountService) {
-        System.out.println("\n=== MANAGER Menu ===");
-        System.out.println("1. Approve/Deny credits");
-        System.out.println("2. View reports");
-        System.out.println("3. Logout");
-        int choice = scanner.nextInt();
-        scanner.nextLine();
-        switch (choice) {
-            case 1 -> System.out.println("Approve/Deny credits (to implement)");
-            case 2 -> System.out.println("View reports (to implement)");
-            case 3 -> System.out.println("Logging out...");
-            default -> System.out.println("Invalid choice.");
+        while (true) {
+            System.out.println("\n=== MANAGER Menu ===");
+            System.out.println("1. Approve/Deny pending credits");
+            System.out.println("2. Approve/Deny external transfers");
+            System.out.println("3. View financial reports");
+            System.out.println("4. Manage fee rules");
+            System.out.println("5. Logout");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) {
+                case 1 -> {
+                    System.out.println("--- Pending Credit Requests ---");
+                    // TODO: integrate CreditService
+                    // Example: List<Credit> pendingCredits = creditService.getPendingCredits();
+                    // pendingCredits.forEach(System.out::println);
+                    System.out.println("Select credit ID to approve/deny (or 0 to cancel): ");
+                    int creditId = scanner.nextInt();
+                    scanner.nextLine();
+                    if (creditId != 0) {
+                        System.out.println("Approve (A) or Deny (D)? ");
+                        String decision = scanner.nextLine();
+                        if (decision.equalsIgnoreCase("A")) {
+                            // creditService.approveCredit(creditId);
+                            System.out.println("Credit #" + creditId + " approved.");
+                        } else if (decision.equalsIgnoreCase("D")) {
+                            // creditService.denyCredit(creditId);
+                            System.out.println("Credit #" + creditId + " denied.");
+                        }
+                    }
+                }
+                case 2 -> {
+                    System.out.println("--- Pending External Transfers ---");
+                    List<Transaction> pendingTransfers = .getPendingExternalTransfers();
+                }
+                case 3 -> {
+                    System.out.println("--- Reports & Statistics ---");
+                    // TODO: integrate ReportingService
+                    // Example: reportingService.printBankStatistics();
+                    System.out.println("1. Total bank balance");
+                    System.out.println("2. Revenues from credits");
+                    System.out.println("3. Top clients by transactions");
+                    System.out.println("4. Back");
+                    int reportChoice = scanner.nextInt();
+                    scanner.nextLine();
+                    switch (reportChoice) {
+                        case 1 -> System.out.println("Total bank balance: ...");
+                        case 2 -> System.out.println("Total revenues from credits: ...");
+                        case 3 -> System.out.println("Top clients: ...");
+                        case 4 -> System.out.println("Returning to Manager Menu...");
+                        default -> System.out.println("Invalid choice.");
+                    }
+                }
+                case 4 -> {
+                    System.out.println("--- Fee Rules Management ---");
+                    System.out.println("1. List rules");
+                    System.out.println("2. Add rule");
+                    System.out.println("3. Update rule");
+                    System.out.println("4. Activate/Deactivate rule");
+                    System.out.println("5. Back");
+                    int feeChoice = scanner.nextInt();
+                    scanner.nextLine();
+                    switch (feeChoice) {
+                        case 1 -> {
+                            // feeService.listRules();
+                            System.out.println("Listing fee rules...");
+                        }
+                        case 2 -> {
+                            System.out.println("Enter operation type: ");
+                            String opType = scanner.nextLine();
+                            System.out.println("Enter mode (FIX/PERCENT): ");
+                            String mode = scanner.nextLine();
+                            System.out.println("Enter value: ");
+                            BigDecimal value = scanner.nextBigDecimal();
+                            scanner.nextLine();
+                            System.out.println("Enter currency: ");
+                            String currency = scanner.nextLine();
+                            // feeService.addRule(opType, mode, value, currency);
+                            System.out.println("Rule added successfully.");
+                        }
+                        case 3 -> System.out.println("Update rule (to implement)");
+                        case 4 -> System.out.println("Activate/Deactivate rule (to implement)");
+                        case 5 -> System.out.println("Returning to Manager Menu...");
+                        default -> System.out.println("Invalid choice.");
+                    }
+                }
+                case 5 -> {
+                    System.out.println("Logging out...");
+                    return;
+                }
+                default -> System.out.println("Invalid choice.");
+            }
         }
     }
-
 
 }

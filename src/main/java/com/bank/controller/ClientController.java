@@ -31,12 +31,10 @@ ClientService clientService;
                  System.out.println("Clients List:");
                  clients.stream().forEach(s -> {
                      System.out.println("name : " + s.getFirstName() + " " + s.getLastName() + ", email: " + s.getEmail());
-                     s.getAccounts().forEach(a -> System.out.println("  Account name: " + a.getAccountType() + ", Balance: " + a.getBalance()));
+                     s.getAccounts().forEach(a -> System.out.println("  Account name: " + a.getAccountType() + ", Balance: " + a.getBalance() + ", RIB: " + a.getAccountRib()) );
                  });
              }
     }
-
-
 
     public Optional<Client> getClientByEmail(String email) {
         if (email == null || email.isEmpty()) {
@@ -52,6 +50,5 @@ ClientService clientService;
         }
         return client;
     }
-
 
 }

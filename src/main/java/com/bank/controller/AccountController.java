@@ -24,4 +24,15 @@ public class AccountController {
     public void internalTransfer(Client client, String sourceRib, String destRib, BigDecimal amount){
         accountService.internalTransfer(client, sourceRib, destRib, amount);
     }
+    public void externalTransfer(Client client, String sourceRib, String destRib, BigDecimal amount){
+        accountService.externalTransfer(client, sourceRib, destRib, amount);
+    }
+    public void createNewAccount(Client client){
+        try {
+            accountService.createNewAccount(client);
+            System.out.println("Account created successfully.");
+        }catch (Exception e){
+            System.out.println("Failed to create account: " + e.getMessage());
+        }
+    }
 }

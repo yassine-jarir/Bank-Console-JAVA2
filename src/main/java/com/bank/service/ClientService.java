@@ -45,5 +45,8 @@ public class ClientService {
         Optional<Client> client = clientRepository.getClientByEmail(email);
         return client;
     }
+    public void createNewAccount(Client client, Boolean createSavingAccount){
+        AccountService.createNewAccount(client , createSavingAccount);
+    }
 
 }

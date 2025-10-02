@@ -101,11 +101,11 @@ public class ClientRepositoryImpl implements ClientInterface {
             return new ArrayList<>();
         }
     }
-
+    @Override
     public Optional<Client> getClientByEmail(String email) {
         String sql =  "SELECT c.*, a.* " +
                 "FROM clients c " +
-                "INNER JOIN accounts a ON c.client_id = a.client_id " +
+                "LEFT JOIN accounts a ON c.client_id = a.client_id " +
                 "WHERE c.email = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -114,8 +114,10 @@ public class ClientRepositoryImpl implements ClientInterface {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 Client client = null;
-                while (rs.next()) { // Changed from if to while to process all rows
-                    if (client == null) { // Only create client once
+
+                while (rs.next()) {
+                    if (client == null) {
+                        // Initialize client
                         client = new Client();
                         client.setId(rs.getLong("client_id"));
                         client.setFirstName(rs.getString("first_name"));
@@ -126,25 +128,38 @@ public class ClientRepositoryImpl implements ClientInterface {
                         client.setDateOfBirth(rs.getDate("date_of_birth").toLocalDate());
                         client.setRegistrationDate(rs.getDate("registration_date").toLocalDate());
                         client.setActive(rs.getBoolean("is_active"));
+                        client.setAccounts(new ArrayList<>()); // initialize accounts list
                     }
-                    // Create account for each row
-                    Account account = new Account();
-                    account.setId(rs.getLong("account_id"));
-                    account.setAccountType(AccountType.valueOf((rs.getString("account_type"))));
-                    account.setBalance(rs.getBigDecimal("balance"));
-                    account.setCurrency(rs.getString("currency"));
-                    account.setStatus(rs.getString("status"));
-                    account.setAccountRib(rs.getString("account_rib"));
-                    account.setCustomerId(client.getId());
-                    client.getAccounts().add(account);
+
+                    // Only create account if it exists
+                    if (rs.getObject("account_id") != null) {
+                        Account account = new Account();
+                        account.setId(rs.getLong("account_id"));
+
+                        String accountTypeStr = rs.getString("account_type");
+                        if (accountTypeStr != null) {
+                            account.setAccountType(AccountType.valueOf(accountTypeStr));
+                        }
+
+                        account.setBalance(rs.getBigDecimal("balance"));
+                        account.setCurrency(rs.getString("currency"));
+                        account.setStatus(rs.getString("status"));
+                        account.setAccountRib(rs.getString("account_rib"));
+                        account.setCustomerId(client.getId());
+
+                        client.getAccounts().add(account);
+                    }
                 }
+
                 if (client != null) {
                     return Optional.of(client);
                 }
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return Optional.empty();
     }
-    }
+}
