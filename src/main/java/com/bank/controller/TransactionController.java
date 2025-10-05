@@ -14,4 +14,12 @@ public class TransactionController {
            List<Transaction> pendingTransactions = transactionService.getPendingExternalTransfers();
            return pendingTransactions;
     }
+    public void approveTransaction(Long transactionId) {
+        transactionService.approveTransaction(transactionId);
+    }
+
+    // NEW METHOD: Get all transactions for admin view
+    public List<Transaction> getAllTransactions() {
+        return transactionService.getAllTransactions();
+    }
 }

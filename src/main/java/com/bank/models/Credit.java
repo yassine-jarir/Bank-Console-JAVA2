@@ -4,32 +4,49 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class Credit {
-    private String creditId;
+    private Long creditId;
+    private Long accountId;
     private BigDecimal loanAmount;
     private BigDecimal interestRate;
-    private int loanTermMonths;
+    private Integer loanTermMonths;
     private LocalDate startDate;
     private LocalDate endDate;
-    private String creditStatus;
+    private String creditStatus; // ACTIVE, LATE, CLOSED
 
-    // Constructor
-    public Credit(String creditId, BigDecimal loanAmount, BigDecimal interestRate, int loanTermMonths, LocalDate startDate, LocalDate endDate, String creditStatus) {
-        this.creditId = creditId;
+    // Additional fields for display
+    private String clientName;
+    private String clientEmail;
+    private String accountRib;
+
+    // Default constructor
+    public Credit() {}
+
+    // Constructor for creating new credit requests
+    public Credit(Long accountId, BigDecimal loanAmount, BigDecimal interestRate, Integer loanTermMonths, LocalDate startDate, LocalDate endDate) {
+        this.accountId = accountId;
         this.loanAmount = loanAmount;
         this.interestRate = interestRate;
         this.loanTermMonths = loanTermMonths;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.creditStatus = creditStatus;
+        this.creditStatus = "ACTIVE";
     }
 
-    // Getters and Setters
-    public String getCreditId() {
+    // Getters and setters
+    public Long getCreditId() {
         return creditId;
     }
 
-    public void setCreditId(String creditId) {
+    public void setCreditId(Long creditId) {
         this.creditId = creditId;
+    }
+
+    public Long getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(Long accountId) {
+        this.accountId = accountId;
     }
 
     public BigDecimal getLoanAmount() {
@@ -48,11 +65,11 @@ public class Credit {
         this.interestRate = interestRate;
     }
 
-    public int getLoanTermMonths() {
+    public Integer getLoanTermMonths() {
         return loanTermMonths;
     }
 
-    public void setLoanTermMonths(int loanTermMonths) {
+    public void setLoanTermMonths(Integer loanTermMonths) {
         this.loanTermMonths = loanTermMonths;
     }
 
@@ -78,5 +95,44 @@ public class Credit {
 
     public void setCreditStatus(String creditStatus) {
         this.creditStatus = creditStatus;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
+    }
+
+    public String getClientEmail() {
+        return clientEmail;
+    }
+
+    public void setClientEmail(String clientEmail) {
+        this.clientEmail = clientEmail;
+    }
+
+    public String getAccountRib() {
+        return accountRib;
+    }
+
+    public void setAccountRib(String accountRib) {
+        this.accountRib = accountRib;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Credit ID: %d, Client: %s, Amount: %s, Term: %d months, Status: %s",
+                creditId, clientName, loanAmount, loanTermMonths, creditStatus);
+    }
+
+    // Simple methods for Manager menu display
+    public LocalDate getRequestDate() {
+        return startDate; // Use start date as request date for simplicity
+    }
+
+    public String getRequestStatus() {
+        return creditStatus; // Use credit status as request status
     }
 }

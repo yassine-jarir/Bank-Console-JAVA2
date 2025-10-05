@@ -66,7 +66,6 @@ public class ClientRepositoryImpl implements ClientInterface {
                 Client client = clientMap.get(clientId);
 
                 if (client == null) {
-                    // Create new client only if not already exists
                     client = new Client();
                     client.setId(clientId);
                     client.setFirstName(rs.getString("first_name"));

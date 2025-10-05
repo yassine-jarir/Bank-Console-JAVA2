@@ -125,4 +125,7 @@ public class AccountService {
             throw new RuntimeException("Failed to create new account: " + e.getMessage());
         }
     }
+    public List<Account> getAllAccounts() {
+        return accountRepositoryImpl.getAllAccounts();
+    }
 }

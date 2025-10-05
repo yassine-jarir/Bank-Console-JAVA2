@@ -35,4 +35,9 @@ public class AccountController {
             System.out.println("Failed to create account: " + e.getMessage());
         }
     }
+
+    // NEW METHOD: Get all accounts for admin view
+    public List<Account> getAllAccounts() {
+        return accountService.getAllAccounts();
+    }
 }

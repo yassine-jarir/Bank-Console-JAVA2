@@ -43,7 +43,7 @@ public class UserRepositoryImpl implements UserRepositoryInterface {
             {
                 while (rs.next()) {
                 User user = new User();
-                user.setCustomerId(rs.getInt("user_id"));
+                user.setCustomerId(rs.getLong("user_id"));
                 user.setName(rs.getString("name"));
                 user.setEmail(rs.getString("email"));
                 user.setPhoneNumber(rs.getString("phoneNumber"));

@@ -111,7 +111,7 @@ public class AccountRepositoryImpl implements AccountRepository {
         }
     }
 
-    public void insertExternalTransaction(Account sourceAccount, Account destAccount, BigDecimal amount , int fee_id) {
+    public void insertExternalTransaction(Account sourceAccount, Account destAccount, BigDecimal amount , Integer fee_id) {
         String sql = "INSERT INTO transactions(source_account_id , target_account_id , transaction_type , status  , amount, transaction_date , fee_id) VALUES (?, ?,?, ?, ?, NOW(), ?)";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -120,7 +120,11 @@ public class AccountRepositoryImpl implements AccountRepository {
             stmt.setString(3,  "TRANSFER EXTERNAL");
             stmt.setString(4, "PENDING");
             stmt.setBigDecimal(5, amount);
-            stmt.setInt(6, fee_id);
+            if (fee_id != null) {
+                stmt.setInt(6, fee_id);
+            } else {
+                stmt.setNull(6, java.sql.Types.INTEGER);
+            }
             stmt.executeUpdate();
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -138,25 +142,33 @@ public class AccountRepositoryImpl implements AccountRepository {
         if (sourceAccount.getBalance().compareTo(amount) < 0) {
             throw new RuntimeException("Insufficient funds in source account. Current balance: " + sourceAccount.getBalance());
         }
-        String sql = "SELECT fee_id , value FROM fee_rules WHERE operation_type = 'EXTERNAL_TRANSFER'";
-        BigDecimal feeValue = null;
-        int fee_id = 0;
+
+            String sql = "SELECT fee_id, value FROM fee_rules WHERE operation_type = 'EXTERNAL_TRANSFER' AND is_active = true";
+        BigDecimal feeValue = BigDecimal.ZERO;
+        Integer fee_id = null;
+
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             var rs = stmt.executeQuery();
             if (rs.next()) {
                 feeValue = rs.getBigDecimal("value");
-                 fee_id = rs.getInt("fees_id");
+                fee_id = rs.getInt("fee_id"); // Fixed column name
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println("Error fetching fee rules: " + e.getMessage());
         }
-//        sourceAccount.setBalance(sourceAccount.getBalance().subtract(amount.add(feeValue)));
-//        destAccount.setBalance(sourceAccount.getBalance().add(amount));
+
+        // Check if client has enough balance including fees
+        BigDecimal totalAmount = amount.add(feeValue);
+        if (sourceAccount.getBalance().compareTo(totalAmount) < 0) {
+            throw new RuntimeException("Insufficient funds. Required: " + totalAmount + ", Available: " + sourceAccount.getBalance());
+        }
+
         try {
-//            updateAccountBalance(sourceAccount.getAccountRib(), sourceAccount.getBalance());
-//            updateAccountBalance(destAccount.getAccountRib(), destAccount.getBalance());
             insertExternalTransaction(sourceAccount, destAccount, amount, fee_id);
             System.out.println("Your request for transferring " + amount + " from Account : " + sourceAccount.getAccountRib() + " to Account: " + destAccount.getAccountRib() + " is being processed.");
+            if (feeValue.compareTo(BigDecimal.ZERO) > 0) {
+                System.out.println("Transfer fee of " + feeValue + " " + sourceAccount.getCurrency() + " will be applied.");
+            }
         } catch (Exception e) {
             throw new RuntimeException("Failed to transfer amount: " + e.getMessage());
         }
@@ -184,5 +196,41 @@ public class AccountRepositoryImpl implements AccountRepository {
         account.setAccountRib(RIB);
         createAccount(account, client);
 
+    }
+
+    // NEW METHOD: Get all accounts for admin view
+    public List<Account> getAllAccounts() {
+        String sql = "SELECT a.*, c.first_name, c.last_name, c.email " +
+                    "FROM accounts a " +
+                    "JOIN clients c ON a.client_id = c.client_id " +
+                    "ORDER BY a.account_id DESC";
+
+        List<Account> accounts = new java.util.ArrayList<>();
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            var rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Account account = new Account();
+                account.setId(rs.getLong("account_id"));
+                account.setAccountRib(rs.getString("account_rib"));
+                account.setAccountType(AccountType.valueOf(rs.getString("account_type")));
+                account.setBalance(rs.getBigDecimal("balance"));
+                account.setCurrency(rs.getString("currency"));
+                account.setStatus(rs.getString("status"));
+                account.setCustomerId(rs.getLong("client_id"));
+
+                // Set client info for display
+                String clientName = rs.getString("first_name") + " " + rs.getString("last_name");
+                account.setClientName(clientName);
+                account.setClientEmail(rs.getString("email"));
+
+                accounts.add(account);
+            }
+        } catch (Exception e) {
+            System.out.println("Error fetching all accounts: " + e.getMessage());
+        }
+
+        return accounts;
     }
 }

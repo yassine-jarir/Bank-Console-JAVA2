@@ -23,6 +23,9 @@ ClientService clientService;
                 return null;
          }
          }
+
+    // Removed the CreateClientWithPassword method as clients don't need login functionality
+
          public void getAllClients(){
              List<Client> clients = clientService.getAllClients();
              if(clients == null || clients.isEmpty()){

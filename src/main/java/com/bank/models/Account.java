@@ -14,6 +14,9 @@ public class Account {
     private String status;
     private String createdAt;
 
+    private String clientName;
+    private String clientEmail;
+
     // Default constructor
     public Account() {
     }
@@ -90,5 +93,22 @@ public class Account {
 
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
+    }
+
+    // Getters and setters for client information fields
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
+    }
+
+    public String getClientEmail() {
+        return clientEmail;
+    }
+
+    public void setClientEmail(String clientEmail) {
+        this.clientEmail = clientEmail;
     }
 }

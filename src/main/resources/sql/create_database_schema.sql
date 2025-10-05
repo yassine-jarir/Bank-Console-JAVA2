@@ -59,6 +59,19 @@ CREATE TABLE credits (
 );
 
 -- ==========================
+-- Credit Payments table
+-- ==========================
+CREATE TABLE credit_payments (
+    payment_id SERIAL PRIMARY KEY,
+    credit_id INT NOT NULL,
+    due_date DATE NOT NULL,
+    payment_date DATE,
+    amount NUMERIC(15,2) NOT NULL,
+    status VARCHAR(20) DEFAULT 'PENDING', -- PENDING, PAID, LATE, MISSED
+    CONSTRAINT fk_credit FOREIGN KEY (credit_id) REFERENCES credits(credit_id)
+);
+
+-- ==========================
 -- Fee rules table
 -- ==========================
 CREATE TABLE fee_rules (

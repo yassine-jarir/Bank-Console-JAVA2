@@ -24,11 +24,11 @@ public class AuthRepositoryImpl implements AuthRepository {
 
             if (rs.next()) {
                 User user = new User();
-                user.setCustomerId(rs.getInt("user_id"));
-                user.setName(rs.getString("name"));
+                user.setCustomerId(rs.getLong("user_id"));
+                user.setName(rs.getString("name") );
                 user.setEmail(rs.getString("email"));
                 user.setPassword(rs.getString("password"));
-                user.setPhoneNumber(rs.getString("phoneNumber"));
+                user.setPhoneNumber(rs.getString("phonenumber"));
                 user.setAddress(rs.getString("address"));
                 user.setRole(Role.valueOf(rs.getString("role")));
                 return user;
