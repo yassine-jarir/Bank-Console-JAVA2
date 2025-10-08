@@ -11,10 +11,8 @@ public class CreditPayment {
     private BigDecimal amount;
     private String status; // PENDING, PAID, LATE, MISSED
 
-    // Simple constructor
     public CreditPayment() {}
 
-    // Constructor for creating payments
     public CreditPayment(Long creditId, LocalDate dueDate, BigDecimal amount) {
         this.creditId = creditId;
         this.dueDate = dueDate;
@@ -22,7 +20,6 @@ public class CreditPayment {
         this.status = "PENDING";
     }
 
-    // Simple getters and setters
     public Long getPaymentId() {
         return paymentId;
     }

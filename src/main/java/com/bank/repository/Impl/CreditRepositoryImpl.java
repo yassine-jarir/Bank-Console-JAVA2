@@ -100,7 +100,6 @@ public class CreditRepositoryImpl implements CreditRepository {
 
     @Override
     public void updateCreditStatus(Long creditId, String creditStatus, Long managerId) {
-        // Since you don't need managerId, we'll ignore it and just update the status
         String sql = "UPDATE credits SET credit_status = ? WHERE credit_id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, creditStatus);
@@ -140,4 +139,5 @@ public class CreditRepositoryImpl implements CreditRepository {
         }
         return null;
     }
+
 }

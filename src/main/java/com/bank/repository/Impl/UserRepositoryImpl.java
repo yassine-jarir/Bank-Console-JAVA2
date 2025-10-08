@@ -17,16 +17,22 @@ public class UserRepositoryImpl implements UserRepositoryInterface {
     }
 
      public User CreateUser(User user) {
-        String query = "INSERT INTO users (name, email, phoneNumber, address, password, role) VALUES (?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO users (first_name, last_name, email, phone, address, password, role) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try(PreparedStatement stmt = conn.prepareStatement(query);
         )
              {
-            stmt.setString(1, user.getName());
-            stmt.setString(2, user.getEmail());
-            stmt.setString(3, user.getPhoneNumber());
-            stmt.setString(4, user.getAddress());
-            stmt.setString(5, user.getPassword());
-            stmt.setString(6, user.getRole().name());
+            // Split the name into first and last name
+            String[] nameParts = user.getName().trim().split("\\s+", 2);
+            String firstName = nameParts[0];
+            String lastName = nameParts.length > 1 ? nameParts[1] : ""; // Use empty string if no last name
+
+            stmt.setString(1, firstName);
+            stmt.setString(2, lastName);
+            stmt.setString(3, user.getEmail());
+            stmt.setString(4, user.getPhoneNumber());
+            stmt.setString(5, user.getAddress());
+            stmt.setString(6, user.getPassword());
+            stmt.setString(7, user.getRole().name());
 
             stmt.executeUpdate();
             return user;
@@ -44,9 +50,13 @@ public class UserRepositoryImpl implements UserRepositoryInterface {
                 while (rs.next()) {
                 User user = new User();
                 user.setCustomerId(rs.getLong("user_id"));
-                user.setName(rs.getString("name"));
+                // Concatenate first_name and last_name
+                String firstName = rs.getString("first_name");
+                String lastName = rs.getString("last_name");
+                String fullName = firstName + (lastName != null && !lastName.isEmpty() ? " " + lastName : "");
+                user.setName(fullName);
                 user.setEmail(rs.getString("email"));
-                user.setPhoneNumber(rs.getString("phoneNumber"));
+                user.setPhoneNumber(rs.getString("phone"));
                 user.setAddress(rs.getString("address"));
                 user.setPassword(rs.getString("password"));
                 user.setRole(com.bank.enums.Role.valueOf(rs.getString("role")));

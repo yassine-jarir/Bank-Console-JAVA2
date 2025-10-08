@@ -18,7 +18,6 @@ public class TransactionController {
         transactionService.approveTransaction(transactionId);
     }
 
-    // NEW METHOD: Get all transactions for admin view
     public List<Transaction> getAllTransactions() {
         return transactionService.getAllTransactions();
     }

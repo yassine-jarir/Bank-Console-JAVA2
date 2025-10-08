@@ -23,21 +23,19 @@ public class CreditService {
 
     public void approveCredit(Long creditId, Long managerId) {
         try {
-            // Get the credit details
+
             Credit credit = creditRepository.getCreditById(creditId);
             if (credit == null) {
                 throw new RuntimeException("Credit not found with ID: " + creditId);
             }
 
-            // Verify credit is still pending
             if (!"PENDING".equals(credit.getCreditStatus())) {
                 throw new RuntimeException("Credit is not in PENDING status. Current status: " + credit.getCreditStatus());
             }
 
-            // Update credit status to ACTIVE (approved)
             creditRepository.updateCreditStatus(creditId, "ACTIVE", managerId);
 
-            // NEW: Create monthly payment schedule when credit is approved
+            // create credits payments calendar
             BigDecimal monthlyAmount = credit.getLoanAmount().divide(
                 BigDecimal.valueOf(credit.getLoanTermMonths()), 2, RoundingMode.HALF_UP);
 
@@ -45,9 +43,11 @@ public class CreditService {
                 creditId,
                 credit.getLoanTermMonths(),
                 monthlyAmount,
-                credit.getStartDate()
+                credit.getStartDate(),
+                    credit.getInterestRate()
             );
-
+//            add amount to client's account balance
+            creditPaymentRepository.addAmountToAccountBalance(credit.getAccountId(), credit.getLoanAmount());
             System.out.println("Credit approved successfully!");
             System.out.printf("Credit ID: %d for client %s has been APPROVED%n",
                     creditId, credit.getClientName());
@@ -70,12 +70,10 @@ public class CreditService {
                 throw new RuntimeException("Credit not found with ID: " + creditId);
             }
 
-            // Verify credit is still pending
             if (!"PENDING".equals(credit.getCreditStatus())) {
                 throw new RuntimeException("Credit is not in PENDING status. Current status: " + credit.getCreditStatus());
             }
 
-            // Update credit status to REJECTED (denied)
             creditRepository.updateCreditStatus(creditId, "REJECTED", managerId);
 
             System.out.println("Credit denied successfully!");

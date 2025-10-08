@@ -3,6 +3,7 @@ package com.bank.controller;
 import com.bank.models.CreditPayment;
 import com.bank.service.CreditPaymentService;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class CreditPaymentController {
@@ -12,23 +13,28 @@ public class CreditPaymentController {
         this.creditPaymentService = creditPaymentService;
     }
 
-    // Simple method to pay next installment
     public void payNextInstallment(Long creditId) {
         creditPaymentService.payNextInstallment(creditId);
     }
 
-    // Simple method to show payment history
     public void showPaymentHistory(Long creditId) {
         creditPaymentService.showPaymentHistory(creditId);
     }
 
-    // Simple method to get all payments for a credit
     public List<CreditPayment> getPaymentsForCredit(Long creditId) {
         return creditPaymentService.getPaymentsForCredit(creditId);
     }
 
-    // Simple method to check overdue payments
     public void checkOverduePayments() {
         creditPaymentService.checkOverduePayments();
+    }
+
+    public void payInstallmentByAmount(Long clientId, BigDecimal amount) {
+        creditPaymentService.payInstallmentByAmount(clientId, amount);
+    }
+
+    // NEW METHOD: Get next due payment information for a client
+    public CreditPayment getNextDuePayment(Long clientId) {
+        return creditPaymentService.getNextDuePayment(clientId);
     }
 }

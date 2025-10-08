@@ -43,7 +43,7 @@ public class AccountRepositoryImpl implements AccountRepository {
     }
 
     public Account createAccount(Account account, Client client) {
-        String sql = "INSERT INTO accounts(account_type, balance, currency, status, client_id, account_rib) VALUES (?,?,?,?,?,?)";
+        String sql = "INSERT INTO accounts(account_type, balance, currency, status, client_id, account_rib) VALUES (?,?,?,?,?,?) RETURNING account_id";
         try (PreparedStatement stmt = connection.prepareStatement(sql);
         ) {
             stmt.setString(1, account.getAccountType().toString());
@@ -51,9 +51,12 @@ public class AccountRepositoryImpl implements AccountRepository {
             stmt.setString(3, account.getCurrency());
             stmt.setString(4, account.getStatus());
             stmt.setLong(5, client.getId());
-
             stmt.setString(6, account.getAccountRib());
-            stmt.executeUpdate();
+
+            var rs = stmt.executeQuery();
+            if (rs.next()) {
+                account.setId(rs.getLong("account_id"));
+            }
             return account;
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -117,7 +120,7 @@ public class AccountRepositoryImpl implements AccountRepository {
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setLong(1, sourceAccount.getId());
             stmt.setLong(2, destAccount.getId());
-            stmt.setString(3,  "TRANSFER EXTERNAL");
+            stmt.setString(3,  "TRANSFER_EXTERNAL");
             stmt.setString(4, "PENDING");
             stmt.setBigDecimal(5, amount);
             if (fee_id != null) {
@@ -151,18 +154,11 @@ public class AccountRepositoryImpl implements AccountRepository {
             var rs = stmt.executeQuery();
             if (rs.next()) {
                 feeValue = rs.getBigDecimal("value");
-                fee_id = rs.getInt("fee_id"); // Fixed column name
+                fee_id = rs.getInt("fee_id");
             }
         } catch (Exception e) {
             System.out.println("Error fetching fee rules: " + e.getMessage());
         }
-
-        // Check if client has enough balance including fees
-        BigDecimal totalAmount = amount.add(feeValue);
-        if (sourceAccount.getBalance().compareTo(totalAmount) < 0) {
-            throw new RuntimeException("Insufficient funds. Required: " + totalAmount + ", Available: " + sourceAccount.getBalance());
-        }
-
         try {
             insertExternalTransaction(sourceAccount, destAccount, amount, fee_id);
             System.out.println("Your request for transferring " + amount + " from Account : " + sourceAccount.getAccountRib() + " to Account: " + destAccount.getAccountRib() + " is being processed.");
@@ -198,7 +194,38 @@ public class AccountRepositoryImpl implements AccountRepository {
 
     }
 
-    // NEW METHOD: Get all accounts for admin view
+    public Account createCreditAccount(Client client, String RIB, BigDecimal loanAmount) {
+        Account account = new Account();
+        account.setAccountType(AccountType.CREDIT);
+        account.setBalance(loanAmount);
+        account.setCurrency("MAD");
+        account.setStatus("ACTIVE");
+        account.setCustomerId(client.getId());
+        account.setAccountRib(RIB);
+
+        createAccount(account, client);
+
+        System.out.println("✅ Credit account created successfully!");
+        System.out.println("RIB: " + RIB);
+        System.out.println("Initial balance: " + loanAmount + " MAD");
+
+        return account;
+    }
+
+    // NEW METHOD: Get credit interest rate from fee_rules table
+    public BigDecimal getCreditInterestRate() {
+        String sql = "SELECT value FROM fee_rules WHERE operation_type = 'CREDIT_INTEREST' AND is_active = true LIMIT 1";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            var rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getBigDecimal("value");
+            }
+        } catch (Exception e) {
+            System.out.println("Error fetching credit interest rate: " + e.getMessage());
+        }
+        return new BigDecimal("5.0");
+    }
+
     public List<Account> getAllAccounts() {
         String sql = "SELECT a.*, c.first_name, c.last_name, c.email " +
                     "FROM accounts a " +

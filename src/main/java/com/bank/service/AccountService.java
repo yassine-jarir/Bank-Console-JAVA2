@@ -125,6 +125,21 @@ public class AccountService {
             throw new RuntimeException("Failed to create new account: " + e.getMessage());
         }
     }
+    public Account createCreditAccount(Client client, BigDecimal loanAmount) {
+        String RIB = RibGenerator.createRib();
+        try {
+            return accountRepositoryImpl.createCreditAccount(client, RIB, loanAmount);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create credit account: " + e.getMessage());
+        }
+    }
+    public BigDecimal getCreditInterestRate() {
+        try {
+            return accountRepositoryImpl.getCreditInterestRate();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get credit interest rate: " + e.getMessage());
+        }
+    }
     public List<Account> getAllAccounts() {
         return accountRepositoryImpl.getAllAccounts();
     }

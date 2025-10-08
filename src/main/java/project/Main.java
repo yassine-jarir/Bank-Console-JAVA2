@@ -4,6 +4,7 @@ import com.bank.controller.*;
 import com.bank.models.Account;
 import com.bank.models.Client;
 import com.bank.models.Credit;
+import com.bank.models.CreditPayment;
 import com.bank.models.Transaction;
 import com.bank.models.User;
 import com.bank.repository.Impl.*;
@@ -53,6 +54,8 @@ public class Main {
         CreditPaymentRepositoryImpl creditPaymentRepository = new CreditPaymentRepositoryImpl();
         CreditPaymentService creditPaymentService = new CreditPaymentService(creditPaymentRepository);
         CreditPaymentController creditPaymentController = new CreditPaymentController(creditPaymentService);
+        // get all transaction
+
         while (true) {
             if (!loggedIn) {
                 System.out.println("\n=== Welcome to MOUSSAKA BANK ===");
@@ -87,7 +90,6 @@ public class Main {
                 switch (loggedInUser.getRole()) {
                     case TELLER -> {
                         showTellerMenu(scanner, authService, loggedIn, loggedInUser, clientController, accountController, creditController, creditPaymentController);
-                        // When menu returns, user has logged out
                         loggedIn = false;
                         loggedInUser = null;
                         System.out.println("Successfully logged out!");
@@ -267,83 +269,89 @@ public class Main {
                     accountController.externalTransfer(client, sourceRib, destRib, amount);
                 }
                 case 5 -> {
-                    // Credit request - simple and easy to understand
                     System.out.println("=== Request a Credit ===");
-
-                    // Show client's accounts so they can choose which one
-                    System.out.println("Your accounts:");
-                    List<Account> accounts = client.getAccounts();
-                    for (int i = 0; i < accounts.size(); i++) {
-                        Account account = accounts.get(i);
-                        System.out.println((i + 1) + ". RIB: " + account.getAccountRib() +
-                                         " | Balance: " + account.getBalance() +
-                                         " | Type: " + account.getAccountType());
-                    }
-
-                    System.out.print("Select account number for the credit: ");
-                    int accountChoice = scanner.nextInt();
+                    System.out.print("Enter loan amount: ");
+                    BigDecimal loanAmount = scanner.nextBigDecimal();
                     scanner.nextLine();
 
-                    if (accountChoice > 0 && accountChoice <= accounts.size()) {
-                        Account selectedAccount = accounts.get(accountChoice - 1);
+                    System.out.print("Enter loan term (months): ");
+                    int termMonths = scanner.nextInt();
+                    scanner.nextLine();
 
-                        // Ask for credit details - simple questions
-                        System.out.print("Enter loan amount: ");
-                        BigDecimal loanAmount = scanner.nextBigDecimal();
-                        scanner.nextLine();
+                    BigDecimal interestRate = accountController.getCreditInterestRate();
+                    System.out.println(" Interest rate retrieved from system: " + interestRate + "%");
 
-                        System.out.print("Enter loan term (months): ");
-                        int termMonths = scanner.nextInt();
-                        scanner.nextLine();
+                    LocalDate startDate = LocalDate.now();
+                    LocalDate endDate = startDate.plusMonths(termMonths);
 
-                        System.out.print("Enter interest rate (%): ");
-                        BigDecimal interestRate = scanner.nextBigDecimal();
-                        scanner.nextLine();
+                    Account creditAccount = accountController.createCreditAccount(client, loanAmount);
 
-                        // Calculate end date (simple math)
-                        LocalDate startDate = LocalDate.now();
-                        LocalDate endDate = startDate.plusMonths(termMonths);
-
-                        // Create a simple credit object
+                    if (creditAccount != null) {
                         Credit newCredit = new Credit();
-                        newCredit.setAccountId(selectedAccount.getId());
+                        newCredit.setAccountId(creditAccount.getId());
                         newCredit.setLoanAmount(loanAmount);
                         newCredit.setInterestRate(interestRate);
                         newCredit.setLoanTermMonths(termMonths);
                         newCredit.setStartDate(startDate);
                         newCredit.setEndDate(endDate);
 
-                        // Save the credit request
                         Credit savedCredit = creditController.createCreditRequest(newCredit);
 
                         if (savedCredit != null) {
                             System.out.println("---- Credit request submitted successfully! ----");
                             System.out.println("Credit ID: " + savedCredit.getCreditId());
-                            System.out.println("Amount: " + loanAmount);
+                            System.out.println("Amount: " + loanAmount + " MAD");
+                            System.out.println("Interest Rate: " + interestRate + "% (from database)");
                             System.out.println("Term: " + termMonths + " months");
-                            System.out.println("Status: PENDING (waiting for manager approval)");
+                            System.out.println("Credit Account RIB: " + creditAccount.getAccountRib());
+                            System.out.println("Account Balance: " + creditAccount.getBalance() + " MAD");
+                            System.out.println("Status: ACTIVE (funds are now available in your credit account)");
                         } else {
                             System.out.println("!!! Failed to submit credit request. Please try again.");
                         }
                     } else {
-                        System.out.println("Invalid account selection.");
+                        System.out.println("!!! Failed to create credit account. Please try again.");
                     }
                 }
                 case 6 -> {
-                    // Pay credit installment - simple and easy
                     System.out.println("=== Pay Credit Installment ===");
-                    System.out.print("Enter Credit ID to pay: ");
-                    Long creditId = scanner.nextLong();
-                    scanner.nextLine();
+                    System.out.println("DEBUG: Searching for pending payments for client ID: " + client.getId());
 
                     try {
-                        creditPaymentController.payNextInstallment(creditId);
+                        CreditPayment nextDue = creditPaymentController.getNextDuePayment(client.getId());
+
+                        if (nextDue == null) {
+                            System.out.println("!!! No pending payments found for this client.");
+                            break;
+                        }
+                        System.out.println("-- Next Payment Due:");
+                        System.out.println("   Due Date: " + nextDue.getDueDate());
+                        System.out.println("   Amount Due: " + nextDue.getAmount() + " MAD");
+                        System.out.println("   Credit ID: " + nextDue.getCreditId());
+                        System.out.println();
+
+                        System.out.print("Enter payment amount: ");
+                        BigDecimal paymentAmount = scanner.nextBigDecimal();
+                        scanner.nextLine();
+
+                        if (paymentAmount.compareTo(nextDue.getAmount()) != 0) {
+                            System.out.println("!!! Payment amount mismatch!");
+                            System.out.println("Expected amount: " + nextDue.getAmount() + " MAD");
+                            System.out.println("Your entered amount: " + paymentAmount + " MAD");
+                            System.out.println("Please enter the exact amount due.");
+                            break;
+                        }
+
+                        creditPaymentController.payInstallmentByAmount(client.getId(), paymentAmount);
+                        System.out.println("- Payment processed successfully!");
+
                     } catch (Exception e) {
                         System.out.println("!!! Payment failed: " + e.getMessage());
+                        System.out.println("DEBUG: Exception details:");
+                        e.printStackTrace();
                     }
                 }
                 case 7 -> {
-                    // View payment history - simple and easy
                     System.out.println("=== Credit Payment History ===");
                     System.out.print("Enter Credit ID to view history: ");
                     Long creditId = scanner.nextLong();
@@ -639,7 +647,6 @@ public class Main {
                     System.out.println("\nPending Credit Requests:");
                     System.out.println("=".repeat(100));
 
-                    // Using simple for loop as requested - easy to understand
                     for (int i = 0; i < pendingCredits.size(); i++) {
                         Credit credit = pendingCredits.get(i);
                         System.out.println((i + 1) + ". Credit ID: " + credit.getCreditId());
@@ -679,16 +686,17 @@ public class Main {
                             }
                             case "D" -> {
                                 System.out.print("Enter reason for denial: ");
-                                String reason = scanner.nextLine();
                                 try {
                                     creditController.denyCredit(selectedCredit.getCreditId(), loggedInUser.getCustomerId());
                                     System.out.println("!!! Credit DENIED !!!");
-                                    System.out.println("Reason: " + reason);
                                 } catch (Exception e) {
                                     System.out.println("!!! Failed to deny credit: " + e.getMessage());
                                 }
                             }
-                            case "C" -> System.out.println("Action cancelled.");
+                            case "C" -> {
+                                System.out.println("Action cancelled.");
+                                return;
+                            }
                             default -> System.out.println("Invalid choice.");
                         }
                     } else if (creditChoice != 0) {

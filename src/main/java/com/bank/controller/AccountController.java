@@ -36,8 +36,25 @@ public class AccountController {
         }
     }
 
-    // NEW METHOD: Get all accounts for admin view
     public List<Account> getAllAccounts() {
         return accountService.getAllAccounts();
+    }
+
+    public Account createCreditAccount(Client client, BigDecimal loanAmount) {
+        try {
+            return accountService.createCreditAccount(client, loanAmount);
+        } catch (Exception e) {
+            System.out.println("Error creating credit account: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public BigDecimal getCreditInterestRate() {
+        try {
+            return accountService.getCreditInterestRate();
+        } catch (Exception e) {
+            System.out.println("Error getting credit interest rate: " + e.getMessage());
+            return new BigDecimal("5.0");
+        }
     }
 }

@@ -18,10 +18,10 @@ ClientService clientService;
          if (newClient != null){
              System.out.println("Client created successfully: " + newClient.getFirstName() + " " + newClient.getLastName() + "ID : " + newClient.getId());
              return newClient;
-    }else{
+              }else{
                 System.out.println("Error: Could not create client.");
                 return null;
-         }
+              }
          }
 
     // Removed the CreateClientWithPassword method as clients don't need login functionality

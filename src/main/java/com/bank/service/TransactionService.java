@@ -65,7 +65,9 @@ public class TransactionService {
         }
     }
 
-    // NEW METHOD: Get all transactions for admin view
+    public List<Transaction> getAllTransactionsmis(){
+        return transactionRepository.getAllTransactionsmis();
+    }
     public List<Transaction> getAllTransactions() {
         return transactionRepository.getAllTransactions();
     }

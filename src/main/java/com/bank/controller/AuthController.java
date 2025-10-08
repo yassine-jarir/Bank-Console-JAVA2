@@ -12,6 +12,7 @@ public class AuthController {
         this.authService = new AuthService(new AuthRepositoryImpl());
     }
 
+
     public User login(String email, String password) {
       User user =  authService.login(email, password);
       if (user != null) {
