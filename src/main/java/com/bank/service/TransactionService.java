@@ -1,5 +1,6 @@
 package com.bank.service;
 
+import com.bank.models.Client;
 import com.bank.models.Transaction;
 import com.bank.repository.Impl.TransactionRepositoryImpl;
 
@@ -65,9 +66,8 @@ public class TransactionService {
         }
     }
 
-    public List<Transaction> getAllTransactionsmis(){
-        return transactionRepository.getAllTransactionsmis();
-    }
+
+
     public List<Transaction> getAllTransactions() {
         return transactionRepository.getAllTransactions();
     }

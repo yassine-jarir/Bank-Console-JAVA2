@@ -54,11 +54,11 @@ public class Main {
         CreditPaymentRepositoryImpl creditPaymentRepository = new CreditPaymentRepositoryImpl();
         CreditPaymentService creditPaymentService = new CreditPaymentService(creditPaymentRepository);
         CreditPaymentController creditPaymentController = new CreditPaymentController(creditPaymentService);
-        // get all transaction
+
 
         while (true) {
             if (!loggedIn) {
-                System.out.println("\n=== Welcome to MOUSSAKA BANK ===");
+                System.out.println("\n=== Welcome to MOUSSAOUI BANK  ===");
                 System.out.println("1. Login");
                 System.out.println("2. Exit");
                 int choice = scanner.nextInt();
@@ -216,9 +216,8 @@ public class Main {
             System.out.println("4. External transfer ");
             System.out.println("5. Request credit");
             System.out.println("6. Pay credit installment");
-            System.out.println("7. View credit payment history");
-            System.out.println("8. Create new account  ");
-            System.out.println("9. Back");
+            System.out.println("7. Create new account  ");
+            System.out.println("8. Back");
 
             int choice = scanner.nextInt();
             scanner.nextLine();
@@ -351,19 +350,8 @@ public class Main {
                         e.printStackTrace();
                     }
                 }
-                case 7 -> {
-                    System.out.println("=== Credit Payment History ===");
-                    System.out.print("Enter Credit ID to view history: ");
-                    Long creditId = scanner.nextLong();
-                    scanner.nextLine();
 
-                    try {
-                        creditPaymentController.showPaymentHistory(creditId);
-                    } catch (Exception e) {
-                        System.out.println("!!! Error viewing history: " + e.getMessage());
-                    }
-                }
-                case 8 -> {
+                case 7 -> {
                     System.out.println("create savings account ? (yes/no) ");
                     String response = scanner.nextLine();
                     if (response.equalsIgnoreCase("yes") ) {

@@ -5,11 +5,13 @@ import com.bank.enums.AccountType;
 import com.bank.enums.TransactionStatus;
 import com.bank.enums.TransactionType;
 import com.bank.models.Account;
+import com.bank.models.Client;
 import com.bank.models.Transaction;
 import com.bank.repository.interfaces.TransactionRepository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -211,43 +213,5 @@ public class TransactionRepositoryImpl implements TransactionRepository {
         return new ArrayList<>();
     }
 
-    public List<Transaction> getAllTransactionsmis(){
-        String sql = "SELECT t.*, " +
-                "sa.account_rib as source_rib, ta.account_rib as target_rib, " +
-                "sc.email as source_client_email, sc.first_name as source_first_name, sc.last_name as source_last_name, " +
-                "tc.email as target_client_email, tc.first_name as target_first_name, tc.last_name as target_last_name " +
-                "FROM transactions t " +
-                "JOIN accounts sa ON t.source_account_id = sa.account_id " +
-                "JOIN accounts ta ON t.target_account_id = ta.account_id " +
-                "JOIN clients sc ON sa.client_id = sc.client_id " +
-                "JOIN clients tc ON ta.client_id = tc.client_id " +
-                "ORDER BY t.transaction_date DESC";
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            var rs = stmt.executeQuery();
-            List<Transaction> transactions = new ArrayList<>();
-
-            while (rs.next()) {
-                Transaction transaction = new Transaction();
-                transaction.setTransactionId(rs.getLong("transaction_id"));
-                transaction.setTransactionType(TransactionType.valueOf(rs.getString("transaction_type")));
-                transaction.setAmount(rs.getBigDecimal("amount"));
-                transaction.setStatus(TransactionStatus.valueOf(rs.getString("status")));
-                transaction.setTransactionDate(rs.getTimestamp("transaction_date").toLocalDateTime());
-
-                // Set client information for display
-                transaction.setSourceClientEmail(rs.getString("source_client_email"));
-                transaction.setTargetClientEmail(rs.getString("target_client_email"));
-                transaction.setSourceAccountRib(rs.getString("source_rib"));
-                transaction.setTargetAccountRib(rs.getString("target_rib"));
-
-                transactions.add(transaction);
-            }
-            return transactions;
-        } catch (Exception e) {
-            System.out.println("Error fetching all transactions: " + e.getMessage());
-        }
-        return new ArrayList<>();
-    }
 
 }
